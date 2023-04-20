@@ -2,7 +2,6 @@ from datetime import timedelta
 
 from core.schemas import *
 from core.tests import BaseTestCase
-from django.test import TestCase
 from django.urls import reverse, reverse_lazy
 from django.utils.timezone import now
 from freezegun import freeze_time
@@ -10,49 +9,63 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 
 
-class UserCreateAPITestCase(TestCase):
+class UserCreateAPITestCase(BaseTestCase):
     path = reverse_lazy('users:create')
 
     def test_url(self):
         self.assertEqual('/users/', self.path)
 
-    def _test_create(
-        self,
-        phone='01012345678',
-        password='password!2',
-        password2='password!2',
-        expected_status_code=201,
-        expected_schema=res201_schema(user_schema),
-    ):
-        res = self.client.post(
-            self.path,
-            data={
-                'phone': phone,
-                'password': password,
-                'password2': password2,
-            }
-        )
-        self.assertEqual(expected_status_code, res.status_code)
-        self.assertTrue(expected_schema.is_valid(res.json()))
-
     def test_success(self):
         '''
         정상 생성
         '''
-        self._test_create()
+        self.generic_test(
+            self.path,
+            'post',
+            201,
+            res201_schema(user_schema),
+            phone='01012345678',
+            password=self.user_password,
+            password2=self.user_password,
+        )
 
     def test_password_mismatch(self):
         '''
         비밀번호 불일치
         '''
-        self._test_create(password2='password!1', expected_status_code=400, expected_schema=res400_schema)
+        self.generic_test(
+            self.path,
+            'post',
+            400,
+            res400_schema,
+            phone='01012345678',
+            password=self.user_password,
+            password2=self.user_password + '1',
+        )
 
     def test_already_exists_phone(self):
         '''
         휴대폰번호 중복 체크
         '''
-        self._test_create()
-        self._test_create(expected_status_code=400, expected_schema=res400_schema)
+        data = {
+            'phone':'01012345678',
+            'password':self.user_password,
+            'password2':self.user_password,
+        }
+        self.generic_test(
+            self.path,
+            'post',
+            201,
+            res201_schema(user_schema),
+            **data
+        )
+        self.generic_test(
+            self.path,
+            'post',
+            400,
+            res400_schema,
+            **data
+        )
 
     def test_phone_format_invalid(self):
         '''
@@ -66,7 +79,15 @@ class UserCreateAPITestCase(TestCase):
             '01412345678', # wrong prefix
         ]
         for phone in invalid_list:
-            self._test_create(phone=phone, expected_status_code=400, expected_schema=res400_schema)
+            self.generic_test(
+                self.path,
+                'post',
+                400,
+                res400_schema,
+                phone=phone,
+                password=self.user_password,
+                password2=self.user_password,
+            )
 
 
 class TokenCreateAPITestCase(BaseTestCase):
