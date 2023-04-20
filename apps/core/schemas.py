@@ -35,3 +35,11 @@ token_schema = Schema(
         "refresh": str,
     }
 )
+
+store_schema = Schema(
+    {
+        "id": int,
+        "owner": int,
+        "name": str,
+    }
+)

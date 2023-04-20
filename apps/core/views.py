@@ -33,7 +33,7 @@ class WrappedResponseDataMixin(APIView):
         data = response.data
 
         if code == status.HTTP_204_NO_CONTENT:
-            return response
+            return None
 
         return {
             "meta": {
