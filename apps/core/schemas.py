@@ -6,11 +6,11 @@ from schema import Or, Schema
 def _res_schema(code, data=None):
     return Schema(
         {
-            'meta': {
-                'code': code,
-                'message': Or(str, dict),
+            "meta": {
+                "code": code,
+                "message": Or(str, dict),
             },
-            'data': data,
+            "data": data,
         }
     )
 
@@ -24,14 +24,14 @@ res403_schema = _res_schema(403, data=None)
 
 user_schema = Schema(
     {
-        'id': int,
-        'phone': str,
+        "id": int,
+        "phone": str,
     }
 )
 
 token_schema = Schema(
     {
-        'access': str,
-        'refresh': str,
+        "access": str,
+        "refresh": str,
     }
 )

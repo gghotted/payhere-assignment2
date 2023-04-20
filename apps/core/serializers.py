@@ -5,6 +5,4 @@ class CreateSerializer(serializers.ModelSerializer):
     representation_serializer_class = None
 
     def to_representation(self, instance):
-        return self.representation_serializer_class(
-            instance=instance
-        ).data
+        return self.representation_serializer_class(instance=instance).data

@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 
 
 class WrappedResponseDataMixin(APIView):
-    '''
+    """
     response data를 아래와 같은 포맷으로 wrapping 합니다
     {
         "meta": {
@@ -12,16 +12,16 @@ class WrappedResponseDataMixin(APIView):
         },
         "data": data,
     }
-    '''
+    """
 
     def get_response_message(self, code, data):
         if status.is_success(code):
-            return 'ok'
+            return "ok"
         if status.is_client_error(code):
             return data
         if status.is_server_error(code):
-            return 'server error'
-    
+            return "server error"
+
     def get_response_data(self, code, data):
         if status.is_client_error(code) or status.is_server_error(code):
             return None
@@ -30,16 +30,16 @@ class WrappedResponseDataMixin(APIView):
     def wrap_data(self, response):
         code = response.status_code
         data = response.data
-        
+
         if code == status.HTTP_204_NO_CONTENT:
             return response
 
         return {
-            'meta': {
-                'code': code,
-                'message': self.get_response_message(code, data),
+            "meta": {
+                "code": code,
+                "message": self.get_response_message(code, data),
             },
-            'data': self.get_response_data(code, data)
+            "data": self.get_response_data(code, data),
         }
 
     def finalize_response(self, request, response, *args, **kwargs):
