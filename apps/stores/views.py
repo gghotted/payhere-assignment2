@@ -2,6 +2,7 @@ from core.views import WrappedResponseDataMixin
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.permissions import IsAuthenticated
 
+from stores.models import Store
 from stores.serializers import MyStoreCreateSerializer, StoreSerializer
 
 
@@ -16,3 +17,6 @@ class MyStoreListCreateAPIView(WrappedResponseDataMixin, ListCreateAPIView):
         if self.request.method == "POST":
             return MyStoreCreateSerializer
         return StoreSerializer
+
+    def get_queryset(self):
+        return Store.objects.filter(owner=self.request.user)
