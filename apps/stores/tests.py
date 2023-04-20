@@ -1,6 +1,6 @@
 from core.schemas import *
 from core.tests import BaseTestCase
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 
 from stores.models import Store
 
@@ -108,3 +108,50 @@ class StoreListAPITestCase(BaseTestCase):
             auth_user=new_user,
         )
         self.assertEqual(0, len(res["data"]))
+
+
+class StoreRetrieveAPITestCase(BaseTestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = cls.create_user()
+        cls.store = Store.objects.create(owner=cls.user, name="store")
+        cls.path = reverse("stores:detail", args=[cls.store.id])
+
+    def test_url(self):
+        self.assertEqual("/stores/%d/" % self.store.id, self.path)
+
+    def test_success(self):
+        """
+        정상 조회
+        """
+        self.generic_test(
+            self.path,
+            "get",
+            200,
+            res200_schema(store_schema),
+            auth_user=self.user,
+        )
+
+    def test_no_auth(self):
+        """
+        인증 없이
+        """
+        self.generic_test(
+            self.path,
+            "get",
+            401,
+            res401_schema,
+        )
+
+    def test_not_owner(self):
+        """
+        owner가 아닌
+        """
+        new_user = self.create_user(phone="01098765432")
+        self.generic_test(
+            self.path,
+            "get",
+            403,
+            res403_schema,
+            auth_user=new_user,
+        )
