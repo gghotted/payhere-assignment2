@@ -37,6 +37,7 @@ class BaseTestCase(TestCase):
         res = request(
             path,
             data=data,
+            content_type="application/json",
             **self.get_auth_header(auth_user),
         )
         self.assertEqual(expected_status_code, res.status_code)

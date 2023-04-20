@@ -35,4 +35,4 @@ class StoreUpdateSerializer(UpdateSerializer):
 
     class Meta:
         model = Store
-        fields = "name"
+        fields = ("name",)
