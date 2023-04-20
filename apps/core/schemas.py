@@ -8,7 +8,7 @@ def _res_schema(code, data=None):
         {
             "meta": {
                 "code": code,
-                "message": Or(str, dict),
+                "message": str,
             },
             "data": data,
         }

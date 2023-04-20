@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 
 
@@ -18,7 +19,7 @@ class WrappedResponseDataMixin(APIView):
         if status.is_success(code):
             return "ok"
         if status.is_client_error(code):
-            return data
+            return JSONRenderer().render(data)
         if status.is_server_error(code):
             return "server error"
 
