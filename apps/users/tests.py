@@ -3,7 +3,7 @@ from datetime import timedelta
 from core.schemas import *
 from core.tests import BaseTestCase
 from django.test import TestCase
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils.timezone import now
 from freezegun import freeze_time
 from rest_framework_simplejwt.exceptions import TokenError
@@ -190,10 +190,44 @@ class TokenRefreshAPITestCase(BaseTestCase):
         self.assertEqual('/auth/tokens/refresh/', self.path)
 
     def test_success(self):
+        '''
+        정상 리프레시
+        '''
         self.generic_test(
             self.path,
             'post',
             200,
             res200_schema(Schema({'access': str})),
+            refresh=self.token['refresh'],
+        )
+
+
+class TokenBlackListAPITestCase(BaseTestCase):
+    path = reverse_lazy('auth:blacklist_token')
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = cls.create_user()
+        cls.token = cls.create_token(cls.user)
+
+    def test_url(self):
+        self.assertEqual('/auth/tokens/blacklist/', self.path)
+
+    def test_success(self):
+        '''
+        블랙리스트에 정상 등록
+        '''
+        self.generic_test(
+            self.path,
+            'post',
+            200,
+            res200_schema(Schema({})),
+            refresh=self.token['refresh'],
+        )
+        self.generic_test(
+            reverse('auth:refresh_token'),
+            'post',
+            401,
+            res401_schema,
             refresh=self.token['refresh'],
         )
