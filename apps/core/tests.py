@@ -1,4 +1,5 @@
 from django.test import TestCase
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from schema import Schema
 from users.models import User
 
@@ -49,3 +50,14 @@ class BaseTestCase(TestCase):
         }
         user_kwargs.update(kwargs)
         return User.objects.create_user(**user_kwargs)
+
+    @classmethod
+    def create_token(cls, user):
+        serializer = TokenObtainPairSerializer(
+            data={
+                'phone': user.phone,
+                'password': cls.user_password,
+            }
+        )
+        serializer.is_valid(raise_exception=True)
+        return serializer.validated_data

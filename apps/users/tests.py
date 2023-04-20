@@ -155,7 +155,7 @@ class TokenCreateAPITestCase(BaseTestCase):
 
     def test_refresh_token_lifetime(self):
         '''
-        엑세스 토큰 유효 기간
+        리프레시 토큰 유효 기간
         '''
         time = now()
         with freeze_time(time):
@@ -176,3 +176,24 @@ class TokenCreateAPITestCase(BaseTestCase):
                 RefreshToken,
                 refresh,
             )
+
+
+class TokenRefreshAPITestCase(BaseTestCase):
+    path = reverse_lazy('auth:refresh_token')
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = cls.create_user()
+        cls.token = cls.create_token(cls.user)
+
+    def test_url(self):
+        self.assertEqual('/auth/tokens/refresh/', self.path)
+
+    def test_success(self):
+        self.generic_test(
+            self.path,
+            'post',
+            200,
+            res200_schema(Schema({'access': str})),
+            refresh=self.token['refresh'],
+        )
