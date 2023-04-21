@@ -52,3 +52,19 @@ category_schema = Schema(
         "name": str,
     }
 )
+
+product_schema = Schema(
+    {
+        "id": int,
+        "store": int,
+        "category_name": str,
+        "price": int,
+        "cost": int,
+        "name": str,
+        "chosung": str,
+        "description": str,
+        "barcode": str,
+        "sell_by_days": int,
+        "size": str,
+    }
+)
