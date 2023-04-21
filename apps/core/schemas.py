@@ -43,3 +43,11 @@ store_schema = Schema(
         "name": str,
     }
 )
+
+category_schema = Schema(
+    {
+        "id": int,
+        "store": int,
+        "name": str,
+    }
+)
