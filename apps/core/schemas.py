@@ -20,6 +20,7 @@ res201_schema = partial(_res_schema, 201)
 res400_schema = _res_schema(400, data=None)
 res401_schema = _res_schema(401, data=None)
 res403_schema = _res_schema(403, data=None)
+res404_schema = _res_schema(404, data=None)
 
 
 user_schema = Schema(
@@ -40,6 +41,14 @@ store_schema = Schema(
     {
         "id": int,
         "owner": int,
+        "name": str,
+    }
+)
+
+category_schema = Schema(
+    {
+        "id": int,
+        "store": int,
         "name": str,
     }
 )

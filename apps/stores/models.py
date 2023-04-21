@@ -15,3 +15,17 @@ class Store(BaseModel):
         max_length=32,
         validators=[MinLengthValidator(3)],
     )
+
+
+class Category(BaseModel):
+    store = models.ForeignKey(
+        to=Store,
+        on_delete=models.CASCADE,
+        related_name="categories",
+        verbose_name="매장",
+    )
+    name = models.CharField(
+        verbose_name="이름",
+        max_length=16,
+        unique=True,
+    )
