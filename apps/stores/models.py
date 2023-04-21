@@ -27,5 +27,4 @@ class Category(BaseModel):
     name = models.CharField(
         verbose_name="이름",
         max_length=16,
-        unique=True,
     )

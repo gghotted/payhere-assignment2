@@ -18,18 +18,17 @@ class CategoryCreateAPITestCase(BaseTestCase):
         """
         정상 생성
 
-        queries 4개:
+        queries 3개:
             1. get user (request user),
             2. get store (permission check를 위해)
-            3. check unique category name
-            4. insert category
+            3. insert category
         """
         self.generic_test(
             self.path,
             "post",
             201,
             res201_schema(category_schema),
-            expected_query_count=4,
+            expected_query_count=3,
             auth_user=self.user,
             name="category",
         )
@@ -52,20 +51,6 @@ class CategoryCreateAPITestCase(BaseTestCase):
                 auth_user=self.user,
                 name=name,
             )
-
-    def test_duplicated_name(self):
-        """
-        중복 이름
-        """
-        self.test_success()
-        self.generic_test(
-            self.path,
-            "post",
-            400,
-            res400_schema,
-            auth_user=self.user,
-            name="category",
-        )
 
     def test_no_auth(self):
         """
