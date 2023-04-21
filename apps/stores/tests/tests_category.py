@@ -204,3 +204,57 @@ class CategoryRetrieveAPITestCase(BaseTestCase):
             res404_schema,
             auth_user=self.user,
         )
+
+
+class CategoryUpdateAPITestCase(BaseTestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = cls.create_user()
+        cls.store = Store.objects.create(owner=cls.user, name="store")
+        cls.category = Category.objects.create(store=cls.store, name="category")
+        cls.path = reverse(
+            "stores:detail_category", args=[cls.store.id, cls.category.id]
+        )
+
+    def test_url(self):
+        path = "/stores/%d/categories/%d/" % (self.store.id, self.category.id)
+        self.assertEqual(path, self.path)
+
+    def test_success(self):
+        """
+        정사 수정
+        """
+        self.generic_test(
+            self.path,
+            "patch",
+            200,
+            res200_schema(category_schema),
+            auth_user=self.user,
+            name="updated_name",
+        )
+        category = Category.objects.get(id=self.category.id)
+        self.assertEqual("updated_name", category.name)
+
+    def test_no_auth(self):
+        """
+        인증 없이
+        """
+        self.generic_test(
+            self.path,
+            "patch",
+            401,
+            res401_schema,
+        )
+
+    def test_not_owner(self):
+        """
+        owner가 아닌
+        """
+        new_user = self.create_user(phone="01098765432")
+        self.generic_test(
+            self.path,
+            "patch",
+            403,
+            res403_schema,
+            auth_user=new_user,
+        )
