@@ -58,3 +58,11 @@ class CategoryCreateSerializer(CreateSerializer):
     def create(self, validated_data):
         validated_data["store"] = self.context["store"]
         return super().create(validated_data)
+
+
+class CategoryUpdateSerializer(UpdateSerializer):
+    representation_serializer_class = CategorySerializer
+
+    class Meta:
+        model = Category
+        fields = ("name",)
