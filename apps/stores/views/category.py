@@ -46,5 +46,7 @@ class CategoryDetailAPIView(WrappedResponseDataMixin, RetrieveUpdateDestroyAPIVi
         return CategorySerializer
 
     def get_queryset(self):
-        qs = Category.objects.filter(store_id=self.kwargs["store_id"])
+        qs = Category.objects.filter(store_id=self.kwargs["store_id"]).select_related(
+            "store"
+        )
         return qs

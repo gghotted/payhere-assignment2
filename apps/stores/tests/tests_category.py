@@ -94,12 +94,18 @@ class CategoryListAPITestCase(BaseTestCase):
     def test_success(self):
         """
         정상 조회
+
+        queries 3개:
+            1. get user (request user),
+            2. get store (permission check를 위해)
+            3. get categories
         """
         res = self.generic_test(
             self.path,
             "get",
             200,
             res200_schema(Schema([category_schema])),
+            expected_query_count=3,
             auth_user=self.user,
         )
         self.assertEqual(3, len(res["data"]))
@@ -154,12 +160,17 @@ class CategoryRetrieveAPITestCase(BaseTestCase):
     def test_success(self):
         """
         정상 조회
+
+        queries 2개:
+            1. get user (request user)
+            2. get category with store
         """
         self.generic_test(
             self.path,
             "get",
             200,
             res200_schema(category_schema),
+            expected_query_count=2,
             auth_user=self.user,
         )
 
@@ -214,7 +225,12 @@ class CategoryUpdateAPITestCase(BaseTestCase):
 
     def test_success(self):
         """
-        정사 수정
+        정상 수정
+
+        queries 3개:
+            1. get user (request user)
+            2. get category with store
+            3. update category
         """
         self.generic_test(
             self.path,
@@ -222,6 +238,7 @@ class CategoryUpdateAPITestCase(BaseTestCase):
             200,
             res200_schema(category_schema),
             auth_user=self.user,
+            expected_query_count=3,
             name="updated_name",
         )
         category = Category.objects.get(id=self.category.id)
@@ -269,12 +286,18 @@ class CategoryDeleteAPITestCase(BaseTestCase):
     def test_success(self):
         """
         정상 삭제
+
+        queries 3개:
+            1. get user (request user)
+            2. get category with store
+            3. delete category
         """
         self.generic_test(
             self.path,
             "delete",
             204,
             expected_schema=None,
+            expected_query_count=3,
             auth_user=self.user,
         )
 
