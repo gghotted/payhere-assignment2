@@ -1,7 +1,7 @@
 from core.schemas import *
 from core.tests import BaseTestCase
 from django.urls import reverse
-from stores.models import Store
+from stores.models import Category, Store
 
 
 class CategoryCreateAPITestCase(BaseTestCase):
@@ -83,3 +83,63 @@ class CategoryCreateAPITestCase(BaseTestCase):
             res403_schema,
             auth_user=new_user,
         )
+
+
+class CategoryListAPITestCase(BaseTestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = cls.create_user()
+        cls.store = Store.objects.create(owner=cls.user, name="store")
+        cls.path = reverse("stores:list_category", args=[cls.store.id])
+
+        Category.objects.bulk_create(
+            Category(store=cls.store, name="name%d" % i) for i in range(3)
+        )
+
+    def test_url(self):
+        self.assertEqual("/stores/%d/categories/" % self.store.id, self.path)
+
+    def test_success(self):
+        """
+        정상 조회
+        """
+        res = self.generic_test(
+            self.path,
+            "get",
+            200,
+            res200_schema(Schema([category_schema])),
+            auth_user=self.user,
+        )
+        self.assertEqual(3, len(res["data"]))
+
+    def test_no_auth(self):
+        """
+        인증 없이
+        """
+        self.generic_test(
+            self.path,
+            "get",
+            401,
+            res401_schema,
+        )
+
+    def test_not_owner(self):
+        """
+        owner가 아닌
+        """
+        new_user = self.create_user(phone="01098765432")
+        self.generic_test(
+            self.path,
+            "get",
+            403,
+            res403_schema,
+            auth_user=new_user,
+        )
+
+    def test_filter_by_store(self):
+        """
+        store에 해당하는 category만 리스팅 되는지
+        """
+        store = Store.objects.create(owner=self.user, name="store2")
+        Category.objects.create(store=store, name="name")
+        self.test_success()

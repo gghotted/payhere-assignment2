@@ -18,8 +18,11 @@ class CategoryListCreateAPIView(WrappedResponseDataMixin, ListCreateAPIView):
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
-        ctx['store'] = self.store
+        ctx["store"] = self.store
         return ctx
+
+    def get_queryset(self):
+        return self.store.categories.all()
 
     @cached_property
     def store(self):
