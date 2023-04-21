@@ -2,5 +2,5 @@ from functools import partial
 
 from core.permissions import IsOwner
 
-IsStoreOwner = partial(IsOwner, owner_field="owner")
-IsCategoryOwner = partial(IsOwner, owner_field="store.owner")
+IsStoreOwner = partial(IsOwner, owner_id_field="owner_id")
+IsCategoryOwner = partial(IsOwner, owner_id_field="store.owner_id")

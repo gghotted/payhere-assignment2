@@ -17,12 +17,19 @@ class CategoryCreateAPITestCase(BaseTestCase):
     def test_success(self):
         """
         정상 생성
+
+        queries 4개:
+            1. get user (request user),
+            2. get store (permission check를 위해)
+            3. check unique category name
+            4. insert category
         """
         self.generic_test(
             self.path,
             "post",
             201,
             res201_schema(category_schema),
+            expected_query_count=4,
             auth_user=self.user,
             name="category",
         )
