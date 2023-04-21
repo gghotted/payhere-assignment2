@@ -1,7 +1,6 @@
 from core.schemas import *
 from core.tests import BaseTestCase
 from django.urls import reverse, reverse_lazy
-
 from stores.models import Store
 
 
@@ -18,12 +17,17 @@ class StoreCreateAPITestCase(BaseTestCase):
     def test_success(self):
         """
         정상 생성
+
+        queries 2개:
+            1. get user (request user)
+            2. insert store
         """
         self.generic_test(
             self.path,
             "post",
             201,
             res201_schema(store_schema),
+            expected_query_count=2,
             auth_user=self.user,
             name="store",
         )
@@ -74,12 +78,17 @@ class StoreListAPITestCase(BaseTestCase):
     def test_success(self):
         """
         정상 조회
+
+        queries 2개:
+            1. get user (request user)
+            2. get stores
         """
         res = self.generic_test(
             self.path,
             "get",
             200,
             res200_schema(Schema([store_schema])),
+            expected_query_count=2,
             auth_user=self.user,
         )
         self.assertEqual(3, len(res["data"]))
@@ -123,12 +132,17 @@ class StoreRetrieveAPITestCase(BaseTestCase):
     def test_success(self):
         """
         정상 조회
+
+        queries 2개:
+            1. get user (request user)
+            2. get store
         """
         self.generic_test(
             self.path,
             "get",
             200,
             res200_schema(store_schema),
+            expected_query_count=2,
             auth_user=self.user,
         )
 
@@ -170,6 +184,11 @@ class StoreUpdateAPITestCase(BaseTestCase):
     def test_success(self):
         """
         정상 수정
+
+        queries 3개:
+            1. get user (request user)
+            2. get store
+            3. update store
         """
         new_name = "updated name"
         self.generic_test(
@@ -177,6 +196,7 @@ class StoreUpdateAPITestCase(BaseTestCase):
             "patch",
             200,
             res200_schema(store_schema),
+            expected_query_count=3,
             auth_user=self.user,
             name=new_name,
         )
@@ -221,12 +241,19 @@ class StoreDeleteAPITestCase(BaseTestCase):
     def test_success(self):
         """
         정상 삭제
+
+        queries 4개:
+            1. get user (request user)
+            2. get store
+            3. delete categories (cascade)
+            4. delete store
         """
         self.generic_test(
             self.path,
             "delete",
             204,
             expected_schema=None,
+            expected_query_count=4,
             auth_user=self.user,
         )
         self.assertFalse(Store.objects.filter(id=self.store.id).exists())
