@@ -9,9 +9,7 @@ from users.models import User
 
 
 def assert_query_count(count):
-    
     def decorator(func):
-
         @override_settings(DEBUG=True)
         def wrapper(*args, **kwargs):
             reset_queries()
@@ -19,8 +17,9 @@ def assert_query_count(count):
             queries = connection.queries
             assert len(queries) == count, "query_count:%d != %d" % (len(queries), count)
             return ret
-    
+
         return wrapper
+
     return decorator
 
 
@@ -50,7 +49,7 @@ class BaseTestCase(TestCase):
             예상되는 쿼리 수, 값이 주어지고 같지 않을 시 assert
         - auth_user
             인증 유저, 주어지면 access token을 header에 추가
-            
+
 
         return: response json data
         """
