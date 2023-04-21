@@ -18,12 +18,17 @@ class UserCreateAPITestCase(BaseTestCase):
     def test_success(self):
         """
         정상 생성
+
+        queries 2개
+            1. check unique phone
+            2. insert user
         """
         self.generic_test(
             self.path,
             "post",
             201,
             res201_schema(user_schema),
+            expected_query_count=2,
             phone="01012345678",
             password=self.user_password,
             password2=self.user_password,
