@@ -242,18 +242,19 @@ class StoreDeleteAPITestCase(BaseTestCase):
         """
         정상 삭제
 
-        queries 4개:
+        queries 5개:
             1. get user (request user)
             2. get store
-            3. delete categories (cascade)
-            4. delete store
+            3. delete products (cascade)
+            4. delete categories (cascade)
+            5. delete store
         """
         self.generic_test(
             self.path,
             "delete",
             204,
             expected_schema=None,
-            expected_query_count=4,
+            expected_query_count=5,
             auth_user=self.user,
         )
         self.assertFalse(Store.objects.filter(id=self.store.id).exists())
