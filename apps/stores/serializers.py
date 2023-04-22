@@ -1,5 +1,6 @@
 from core.serializers import CreateSerializer, UpdateSerializer
 from core.utils import convert_to_chosung
+from django.forms.models import model_to_dict
 from rest_framework import serializers
 
 from stores.models import Category, Product, Store
@@ -120,3 +121,31 @@ class ProductCreateSerializer(CreateSerializer):
     def create(self, validated_data):
         validated_data["chosung"] = convert_to_chosung(validated_data["name"])
         return super().create(validated_data)
+
+
+class ProductUpdateSerializer(UpdateSerializer):
+    representation_serializer_class = ProductSerializer
+
+    class Meta:
+        model = Product
+        fields = (
+            "category",
+            "price",
+            "cost",
+            "name",
+            "description",
+            "barcode",
+            "sell_by_days",
+            "size",
+        )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["category"].queryset = self.context["store"].categories.all()
+
+    def validate_name(self, value):
+        if value == self.instance.name:
+            return value
+        if Product.objects.filter(store=self.instance.store, name=value).exists():
+            raise serializers.ValidationError("이미 존재하는 이름입니다")
+        return value

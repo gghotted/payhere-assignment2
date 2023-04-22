@@ -4,10 +4,14 @@ from core.paginations import DefaultCursorPagination
 from core.views import WrappedResponseDataMixin
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from rest_framework.generics import ListCreateAPIView
-from stores.models import Store
-from stores.permissions import IsStoreOwner
-from stores.serializers import ProductCreateSerializer, ProductSerializer
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from stores.models import Product, Store
+from stores.permissions import IsProductOwner, IsStoreOwner
+from stores.serializers import (
+    ProductCreateSerializer,
+    ProductSerializer,
+    ProductUpdateSerializer,
+)
 
 
 class ProductListCreateAPIView(WrappedResponseDataMixin, ListCreateAPIView):
@@ -41,3 +45,19 @@ class ProductListCreateAPIView(WrappedResponseDataMixin, ListCreateAPIView):
         obj = get_object_or_404(Store, id=self.kwargs["store_id"])
         self.check_object_permissions(self.request, obj)
         return obj
+
+
+class ProductDetailAPIView(WrappedResponseDataMixin, RetrieveUpdateDestroyAPIView):
+    http_method_names = ["get", "patch", "delete"]
+    permission_classes = [IsProductOwner]
+    lookup_url_kwarg = "product_id"
+
+    def get_serializer_class(self):
+        if self.request.method == "PATCH":
+            return ProductUpdateSerializer
+        return ProductSerializer
+
+    def get_queryset(self):
+        return Product.objects.filter(store_id=self.kwargs["store_id"]).select_related(
+            "category", "store"
+        )
