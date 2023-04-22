@@ -501,3 +501,71 @@ class ProductUpdateAPITestCase(BaseTestCase):
             res403_schema,
             auth_user=new_user,
         )
+
+
+class ProductDeleteAPITestCase(BaseTestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = cls.create_user()
+        cls.store = Store.objects.create(owner=cls.user, name="store")
+        cls.category = Category.objects.create(store=cls.store, name="category")
+        cls.product = Product.objects.create(
+            store=cls.store,
+            category=cls.category,
+            price=5000,
+            cost=3000,
+            name="슈크림 라떼",
+            chosung=convert_to_chosung("슈크림 라떼"),
+            description="맛있는 슈크림 라떼",
+            barcode="1234567890",
+            sell_by_days=3,
+            size="small",
+        )
+        cls.path = reverse("stores:detail_product", args=[cls.store.id, cls.product.id])
+
+    def test_url(self):
+        self.assertEqual(
+            "/stores/%d/products/%d/" % (self.store.id, self.product.id), self.path
+        )
+
+    def test_success(self):
+        """
+        정상 삭제
+
+        queries 3개:
+            1. get user (request user)
+            2. get product with store
+            3. delete product
+        """
+        self.generic_test(
+            self.path,
+            "delete",
+            204,
+            expected_schema=None,
+            expected_query_count=3,
+            auth_user=self.user,
+        )
+
+    def test_no_auth(self):
+        """
+        인증 없이
+        """
+        self.generic_test(
+            self.path,
+            "delete",
+            401,
+            res401_schema,
+        )
+
+    def test_not_owner(self):
+        """
+        owner가 아닌
+        """
+        new_user = self.create_user(phone="01098765432")
+        self.generic_test(
+            self.path,
+            "delete",
+            403,
+            res403_schema,
+            auth_user=new_user,
+        )
