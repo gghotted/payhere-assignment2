@@ -1,5 +1,6 @@
 from functools import cached_property
 
+from core.paginations import DefaultCursorPagination
 from core.views import WrappedResponseDataMixin
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListCreateAPIView
@@ -10,6 +11,7 @@ from stores.serializers import ProductCreateSerializer, ProductSerializer
 
 class ProductListCreateAPIView(WrappedResponseDataMixin, ListCreateAPIView):
     permission_classes = [IsStoreOwner]
+    pagination_class = DefaultCursorPagination
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -20,6 +22,9 @@ class ProductListCreateAPIView(WrappedResponseDataMixin, ListCreateAPIView):
         ctx = super().get_serializer_context()
         ctx["store"] = self.store
         return ctx
+
+    def get_queryset(self):
+        return self.store.products.select_related("category").all()
 
     @cached_property
     def store(self):

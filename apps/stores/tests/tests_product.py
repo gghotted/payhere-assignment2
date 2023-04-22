@@ -1,7 +1,7 @@
 from core.schemas import *
 from core.tests import BaseTestCase
 from django.urls import reverse
-from stores.models import Category, Store
+from stores.models import Category, Product, Store
 
 
 class ProductCreateAPITestCase(BaseTestCase):
@@ -160,6 +160,118 @@ class ProductCreateAPITestCase(BaseTestCase):
         self.generic_test(
             self.path,
             "post",
+            403,
+            res403_schema,
+            auth_user=new_user,
+        )
+
+
+class ProductListAPITestCase(BaseTestCase):
+    paginated_products_schema = cursor_pagination_schema(product_schema)
+    success_schema = res200_schema(paginated_products_schema)
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = cls.create_user()
+        cls.store = Store.objects.create(owner=cls.user, name="store")
+        cls.category = Category.objects.create(store=cls.store, name="category")
+        Product.objects.bulk_create(
+            Product(
+                store=cls.store,
+                category=cls.category,
+                price=5000,
+                cost=3000,
+                name="슈크림 라떼%d" % i,
+                description="맛있는 슈크림 라떼",
+                barcode="1234567890",
+                sell_by_days=3,
+                size="small",
+            )
+            for i in range(11)
+        )
+        cls.path = reverse("stores:list_product", args=[cls.store.id])
+
+    def test_success(self):
+        """
+        정상 조회
+
+        queries 3개:
+            1. get user (request user)
+            2. get store (permission check)
+            3. ger products
+        """
+        res = self.generic_test(
+            self.path,
+            "get",
+            200,
+            self.success_schema,
+            expected_query_count=3,
+            auth_user=self.user,
+        )
+        self.assertEqual(10, len(res["data"]["results"]))
+
+    def test_pagination(self):
+        def _test(path):
+            return self.generic_test(
+                path, "get", 200, self.success_schema, auth_user=self.user
+            )
+
+        first_page = _test(self.path)
+        self.assertEqual(10, len(first_page["data"]["results"]))
+        self.assertTrue(None == first_page["data"]["previous"])
+        self.assertTrue(None != first_page["data"]["next"])
+
+        next_page = _test(first_page["data"]["next"])
+        self.assertEqual(1, len(next_page["data"]["results"]))
+        self.assertTrue(None != next_page["data"]["previous"])
+        self.assertTrue(None == next_page["data"]["next"])
+
+    def test_filter_by_store(self):
+        """
+        해당 store의 product만 검색되야함
+        """
+        store = Store.objects.create(owner=self.user, name="store2")
+        category = Category.objects.create(store=store, name="category")
+        product = Product.objects.create(
+            store=store,
+            category=category,
+            price=5000,
+            cost=3000,
+            name="슈크림 라떼",
+            description="맛있는 슈크림 라떼",
+            barcode="1234567890",
+            sell_by_days=3,
+            size="small",
+        )
+
+        res = self.generic_test(
+            reverse("stores:list_product", args=[store.id]),
+            "get",
+            200,
+            self.success_schema,
+            auth_user=self.user,
+        )
+        self.assertEqual(1, len(res["data"]["results"]))
+
+    def test_no_auth(self):
+        """
+        인증 없이
+        """
+        self.generic_test(
+            self.path,
+            "get",
+            401,
+            res401_schema,
+        )
+
+    def test_not_owner(self):
+        """
+        owner가 아닌
+        """
+        new_user = self.create_user(phone="01098765432")
+        self.generic_test(
+            self.path,
+            "get",
             403,
             res403_schema,
             auth_user=new_user,

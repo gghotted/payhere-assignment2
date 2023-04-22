@@ -15,6 +15,16 @@ def _res_schema(code, data=None):
     )
 
 
+def cursor_pagination_schema(data_schema: Schema):
+    return Schema(
+        {
+            "next": Or(str, None),
+            "previous": Or(str, None),
+            "results": [data_schema],
+        }
+    )
+
+
 res200_schema = partial(_res_schema, 200)
 res201_schema = partial(_res_schema, 201)
 res400_schema = _res_schema(400, data=None)
