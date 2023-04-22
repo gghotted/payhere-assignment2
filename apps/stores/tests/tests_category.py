@@ -287,17 +287,18 @@ class CategoryDeleteAPITestCase(BaseTestCase):
         """
         정상 삭제
 
-        queries 3개:
+        queries 4개:
             1. get user (request user)
             2. get category with store
-            3. delete category
+            3. delete products (cascade)
+            4. delete category
         """
         self.generic_test(
             self.path,
             "delete",
             204,
             expected_schema=None,
-            expected_query_count=3,
+            expected_query_count=4,
             auth_user=self.user,
         )
 
