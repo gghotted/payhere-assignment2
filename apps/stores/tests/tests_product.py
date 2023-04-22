@@ -1,5 +1,6 @@
 from core.schemas import *
 from core.tests import BaseTestCase
+from core.utils import convert_to_chosung
 from django.urls import reverse
 from stores.models import Category, Product, Store
 
@@ -175,19 +176,26 @@ class ProductListAPITestCase(BaseTestCase):
         cls.user = cls.create_user()
         cls.store = Store.objects.create(owner=cls.user, name="store")
         cls.category = Category.objects.create(store=cls.store, name="category")
+
+        dummy_names = ["기타%d" % i for i in range(9)]
+        names = [
+            "슈크림 라떼",
+            "슈쿠류 로또",
+        ] + dummy_names
         Product.objects.bulk_create(
             Product(
                 store=cls.store,
                 category=cls.category,
                 price=5000,
                 cost=3000,
-                name="슈크림 라떼%d" % i,
-                description="맛있는 슈크림 라떼",
+                name=name,
+                chosung=convert_to_chosung(name),
+                description="맛있는 %s" % name,
                 barcode="1234567890",
                 sell_by_days=3,
                 size="small",
             )
-            for i in range(11)
+            for name in names
         )
         cls.path = reverse("stores:list_product", args=[cls.store.id])
 
@@ -252,6 +260,29 @@ class ProductListAPITestCase(BaseTestCase):
             auth_user=self.user,
         )
         self.assertEqual(1, len(res["data"]["results"]))
+
+    def test_search(self):
+        """
+        name or chosung 검색
+        """
+        expected_result_len_list = {
+            "": 10,
+            "슈크림 라떼": 1,
+            "슈크림": 1,
+            "라떼": 1,
+            "ㅅㅋㄹ": 2,
+            "ㅅㅋㄹ ㄹㄸ": 2,
+            "ㄹㄸ": 2,
+        }
+        for search, expected_len in expected_result_len_list.items():
+            res = self.generic_test(
+                self.path + "?search=%s" % search,
+                "get",
+                200,
+                self.success_schema,
+                auth_user=self.user,
+            )
+            self.assertEqual(expected_len, len(res["data"]["results"]))
 
     def test_no_auth(self):
         """

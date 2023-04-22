@@ -2,6 +2,7 @@ from functools import cached_property
 
 from core.paginations import DefaultCursorPagination
 from core.views import WrappedResponseDataMixin
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListCreateAPIView
 from stores.models import Store
@@ -25,6 +26,15 @@ class ProductListCreateAPIView(WrappedResponseDataMixin, ListCreateAPIView):
 
     def get_queryset(self):
         return self.store.products.select_related("category").all()
+
+    def filter_queryset(self, queryset):
+        """
+        search filter
+        """
+        search = self.request.GET.get("search")
+        if not search:
+            return queryset
+        return queryset.filter(Q(name__icontains=search) | Q(chosung__icontains=search))
 
     @cached_property
     def store(self):
