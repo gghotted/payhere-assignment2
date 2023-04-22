@@ -12,7 +12,6 @@ services:
     volumes:
       - ./nginx:/etc/nginx/conf.d/
       - ./apps/staticfiles:/staticfiles
-      - ./apps/media:/media
     depends_on:
       - web
   
