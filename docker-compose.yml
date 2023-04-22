@@ -1,0 +1,45 @@
+version: "3"
+services:
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    environment:
+      - NGINX_ENVSUBST_TEMPLATE_SUFFIX=".conf"
+      - SERVER_NAME=${NGINX_SERVER_NAME}
+    volumes:
+      - ./nginx:/etc/nginx/conf.d/
+      - ./apps/staticfiles:/staticfiles
+      - ./apps/media:/media
+    depends_on:
+      - web
+  
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web
+    command: bash -c "cd apps && ./entrypoint.sh"
+    volumes:
+      - ./apps:/apps
+    depends_on:
+      mysql:
+        condition: service_healthy
+  
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ./data/db:/var/lib/mysql
+    healthcheck:
+      test: ['CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 -u root --password=$$MYSQL_ROOT_PASSWORD']
+      interval: 5s
+      timeout: 2s
+      retries: 10

@@ -1,0 +1,11 @@
+{
+    "ALLOWED_HOSTS": ["*"],
+    "DATABASES": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "payhere",
+        "USER": "gypark",
+        "PASSWORD": "1234",
+        "HOST": "mysql"
+    },
+    "DEBUG": false
+}

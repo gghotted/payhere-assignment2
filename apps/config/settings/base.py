@@ -9,18 +9,29 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
+import json
 from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+SECRET_DIR = BASE_DIR / ".secrets"
+
+COMMON_SECRET_FILE = SECRET_DIR / "common.json"
+COMMON_SECRET = json.loads(COMMON_SECRET_FILE.read_text())
+
+LOCAL_SECRET_FILE = SECRET_DIR / "local.json"
+LOCAL_SECRET = json.loads(LOCAL_SECRET_FILE.read_text())
+
+PRODUCT_SECRET_FILE = SECRET_DIR / "product.json"
+PRODUCT_SECRET = json.loads(PRODUCT_SECRET_FILE.read_text())
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-&#ot&9q9_uqq!zy0@jf3hq75mqx4m08xuz=*s$6jem^0_=mxqu"
+SECRET_KEY = COMMON_SECRET["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -109,9 +120,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "ko-kr"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Seoul"
 
 USE_I18N = True
 
@@ -122,6 +133,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = "static/"
+
+STATIC_ROOT = "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
