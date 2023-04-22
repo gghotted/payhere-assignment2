@@ -374,3 +374,130 @@ class ProductRetrieveAPITestCase(BaseTestCase):
             res403_schema,
             auth_user=new_user,
         )
+
+
+class ProductUpdateAPITestCase(BaseTestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = cls.create_user()
+        cls.store = Store.objects.create(owner=cls.user, name="store")
+        cls.category = Category.objects.create(store=cls.store, name="category")
+        cls.product = Product.objects.create(
+            store=cls.store,
+            category=cls.category,
+            price=5000,
+            cost=3000,
+            name="슈크림 라떼",
+            chosung=convert_to_chosung("슈크림 라떼"),
+            description="맛있는 슈크림 라떼",
+            barcode="1234567890",
+            sell_by_days=3,
+            size="small",
+        )
+        cls.path = reverse("stores:detail_product", args=[cls.store.id, cls.product.id])
+
+    def test_url(self):
+        self.assertEqual(
+            "/stores/%d/products/%d/" % (self.store.id, self.product.id), self.path
+        )
+
+    def test_success(self):
+        """
+        정상 수정
+
+        queries 4개:
+            1. get user (request user)
+            2. get store (permission check)
+            3. check unique name (validation check)
+            4. update product
+            # 5. check category (validation check) 카테고리 입력시
+        """
+        self.generic_test(
+            self.path,
+            "patch",
+            200,
+            res200_schema(product_schema),
+            auth_user=self.user,
+            expected_query_count=4,
+            name="new 슈크림 라떼",
+        )
+        product = Product.objects.get(id=self.product.id)
+        self.assertEqual("new 슈크림 라떼", product.name)
+        self.assertEqual("new ㅅㅋㄹ ㄹㄸ", product.chosung)
+
+    def test_another_store_category(self):
+        """
+        다른 매장의 카테고리로 생성
+        """
+        store = Store.objects.create(owner=self.user, name="store2")
+        category = Category.objects.create(store=store, name="category")
+        self.generic_test(
+            self.path,
+            "patch",
+            400,
+            res400_schema,
+            auth_user=self.user,
+            category=category.id,
+        )
+
+    def test_duplocated_name(self):
+        """
+        중복 이름
+        """
+        Product.objects.create(
+            store=self.store,
+            category=self.category,
+            price=5000,
+            cost=3000,
+            name="아이스 아메리카노",
+            chosung=convert_to_chosung("아이스 아메리카노"),
+            description="맛있는 아이스 아메리카노",
+            barcode="1234567890",
+            sell_by_days=3,
+            size="small",
+        )
+        self.generic_test(
+            self.path,
+            "patch",
+            400,
+            res400_schema,
+            auth_user=self.user,
+            name="아이스 아메리카노",
+        )
+
+    def test_same_name(self):
+        """
+        같은 이름을 수정
+        """
+        self.generic_test(
+            self.path,
+            "patch",
+            200,
+            res200_schema(product_schema),
+            auth_user=self.user,
+            name="슈크림 라떼",
+        )
+
+    def test_no_auth(self):
+        """
+        인증 없이
+        """
+        self.generic_test(
+            self.path,
+            "patch",
+            401,
+            res401_schema,
+        )
+
+    def test_not_owner(self):
+        """
+        owner가 아닌
+        """
+        new_user = self.create_user(phone="01098765432")
+        self.generic_test(
+            self.path,
+            "patch",
+            403,
+            res403_schema,
+            auth_user=new_user,
+        )

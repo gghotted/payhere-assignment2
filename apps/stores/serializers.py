@@ -142,7 +142,7 @@ class ProductUpdateSerializer(UpdateSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["category"].queryset = self.context["store"].categories.all()
+        self.fields["category"].queryset = self.instance.store.categories.all()
 
     def validate_name(self, value):
         if value == self.instance.name:
@@ -150,3 +150,8 @@ class ProductUpdateSerializer(UpdateSerializer):
         if Product.objects.filter(store=self.instance.store, name=value).exists():
             raise serializers.ValidationError("이미 존재하는 이름입니다")
         return value
+
+    def update(self, instance, validated_data):
+        if validated_data.get("name") != instance.name:
+            validated_data["chosung"] = convert_to_chosung(validated_data["name"])
+        return super().update(instance, validated_data)
