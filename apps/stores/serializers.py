@@ -113,12 +113,13 @@ class ProductCreateSerializer(CreateSerializer):
         super().__init__(*args, **kwargs)
         self.fields["category"].queryset = self.context["store"].categories.all()
 
-    def validate(self, attrs):
-        attrs["store"] = self.context["store"]
-        Product(**attrs).validate_constraints()  # for unoque_together (name, store)
-        return attrs
+    def validate_name(self, value):
+        if Product.objects.filter(store=self.context["store"], name=value).exists():
+            raise serializers.ValidationError("이미 존재하는 이름입니다")
+        return value
 
     def create(self, validated_data):
+        validated_data["store"] = self.context["store"]
         validated_data["chosung"] = convert_to_chosung(validated_data["name"])
         return super().create(validated_data)
 
