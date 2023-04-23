@@ -1,6 +1,5 @@
 from core.serializers import CreateSerializer, UpdateSerializer
 from core.utils import convert_to_chosung
-from django.forms.models import model_to_dict
 from rest_framework import serializers
 
 from stores.models import Category, Product, Store
@@ -14,6 +13,7 @@ class StoreSerializer(serializers.ModelSerializer):
             "owner",
             "name",
         )
+        read_only_fields = fields
 
 
 class MyStoreCreateSerializer(CreateSerializer):
