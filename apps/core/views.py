@@ -1,9 +1,8 @@
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
-from rest_framework.views import APIView
 
 
-class WrappedResponseDataMixin(APIView):
+class WrappedResponseDataMixin:
     """
     response data를 아래와 같은 포맷으로 wrapping 합니다
     {
