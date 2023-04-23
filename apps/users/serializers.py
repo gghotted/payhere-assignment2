@@ -38,3 +38,20 @@ class UserCreateSerializer(CreateSerializer):
     def create(self, validated_data):
         validated_data.pop("password2")
         return User.objects.create_user(**validated_data)
+
+
+class TokensSerializer(serializers.Serializer):
+    """
+    for swagger
+    """
+
+    access = serializers.CharField(required=False)
+    refresh = serializers.CharField(required=False)
+
+
+class AccessTokenSerializer(serializers.Serializer):
+    """
+    for swagger
+    """
+
+    access = serializers.CharField(required=False)
