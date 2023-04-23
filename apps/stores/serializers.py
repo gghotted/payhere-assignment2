@@ -156,6 +156,7 @@ class ProductUpdateSerializer(UpdateSerializer):
         return value
 
     def update(self, instance, validated_data):
-        if validated_data.get("name") != instance.name:
-            validated_data["chosung"] = convert_to_chosung(validated_data["name"])
+        new_name = validated_data.get("name")
+        if new_name and new_name != instance.name:
+            validated_data["chosung"] = convert_to_chosung(new_name)
         return super().update(instance, validated_data)

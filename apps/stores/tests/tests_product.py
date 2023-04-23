@@ -478,6 +478,19 @@ class ProductUpdateAPITestCase(BaseTestCase):
             name="슈크림 라떼",
         )
 
+    def test_no_name(self):
+        """
+        이름 없이
+        """
+        self.generic_test(
+            self.path,
+            "patch",
+            200,
+            res200_schema(product_schema),
+            auth_user=self.user,
+            price=2000,
+        )
+
     def test_no_auth(self):
         """
         인증 없이
