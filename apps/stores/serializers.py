@@ -1,6 +1,5 @@
 from core.serializers import CreateSerializer, UpdateSerializer
 from core.utils import convert_to_chosung
-from django.forms.models import model_to_dict
 from rest_framework import serializers
 
 from stores.models import Category, Product, Store
@@ -14,6 +13,7 @@ class StoreSerializer(serializers.ModelSerializer):
             "owner",
             "name",
         )
+        read_only_fields = fields
 
 
 class MyStoreCreateSerializer(CreateSerializer):
@@ -48,6 +48,7 @@ class CategorySerializer(serializers.ModelSerializer):
             "store",
             "name",
         )
+        read_only_fields = fields
 
 
 class CategoryCreateSerializer(CreateSerializer):
@@ -88,6 +89,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "sell_by_days",
             "size",
         )
+        read_only_fields = fields
 
     def get_category_name(self, obj):
         return obj.category.name
@@ -111,7 +113,8 @@ class ProductCreateSerializer(CreateSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["category"].queryset = self.context["store"].categories.all()
+        if "store" in self.context:
+            self.fields["category"].queryset = self.context["store"].categories.all()
 
     def validate_name(self, value):
         if Product.objects.filter(store=self.context["store"], name=value).exists():
@@ -142,7 +145,8 @@ class ProductUpdateSerializer(UpdateSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["category"].queryset = self.instance.store.categories.all()
+        if self.instance:
+            self.fields["category"].queryset = self.instance.store.categories.all()
 
     def validate_name(self, value):
         if value == self.instance.name:
