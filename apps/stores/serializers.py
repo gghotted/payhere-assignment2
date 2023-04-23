@@ -48,6 +48,7 @@ class CategorySerializer(serializers.ModelSerializer):
             "store",
             "name",
         )
+        read_only_fields = fields
 
 
 class CategoryCreateSerializer(CreateSerializer):

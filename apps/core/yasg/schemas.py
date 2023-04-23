@@ -11,7 +11,7 @@ from drf_yasg.openapi import (
     Response,
     Schema,
 )
-from rest_framework.serializers import Serializer
+from rest_framework.serializers import BaseSerializer
 
 serializer_inspector = InlineSerializerInspector(
     *[None] * 5, swagger_settings.DEFAULT_FIELD_INSPECTORS
@@ -22,8 +22,8 @@ def serializer_to_schema(serializer):
     return serializer_inspector.get_schema(serializer)
 
 
-def cursor_pagaination_schema(schema: Union[Schema, Serializer]):
-    if isinstance(schema, Serializer):
+def cursor_pagaination_schema(schema: Union[Schema, BaseSerializer]):
+    if isinstance(schema, BaseSerializer):
         schema = serializer_to_schema(schema)
     return Schema(
         type=TYPE_OBJECT,
@@ -43,7 +43,7 @@ def cursor_pagaination_schema(schema: Union[Schema, Serializer]):
 
 
 def _res_schema(schema=None, code=None, message=None):
-    if isinstance(schema, Serializer):
+    if isinstance(schema, BaseSerializer):
         schema = serializer_to_schema(schema)
     return Schema(
         type=TYPE_OBJECT,
