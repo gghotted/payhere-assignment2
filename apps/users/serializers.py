@@ -11,6 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
             "id",
             "phone",
         )
+        read_only_fields = fields
 
 
 class UserCreateSerializer(CreateSerializer):
