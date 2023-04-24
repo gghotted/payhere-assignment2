@@ -1,0 +1,9 @@
+from .base import *
+
+DEBUG = PRODUCT_SECRET["DEBUG"]
+
+ALLOWED_HOSTS = PRODUCT_SECRET["ALLOWED_HOSTS"]
+
+WSGI_APPLICATION = "config.wsgi.product.application"
+
+DATABASES = {"default": PRODUCT_SECRET["DATABASES"]}
